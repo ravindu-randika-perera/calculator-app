@@ -2,192 +2,260 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Enhanced Calculator</title>
+<title>Advanced Calculator</title>
 
 <style>
-  * {
-    box-sizing: border-box;
-  }
+:root {
+  --bg: #0f0f0f;
+  --panel: #1e1e1e;
+  --btn: #3a3a3a;
+  --op: #ff9f0a;
+  --eq: #30d158;
+  --txt: #fff;
+  --accent: #0f0;
+}
 
-  body {
-    margin: 0;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: radial-gradient(circle at top, #2a2a2a, #0f0f0f);
-    font-family: "Segoe UI", sans-serif;
-  }
+body.light {
+  --bg: #f4f4f4;
+  --panel: #ffffff;
+  --btn: #e0e0e0;
+  --op: #ff9500;
+  --eq: #34c759;
+  --txt: #000;
+  --accent: #007aff;
+}
 
-  .calculator {
-    width: 280px;
-    padding: 20px;
-    border-radius: 15px;
-    background: rgba(40, 40, 40, 0.9);
-    box-shadow: 0 0 30px rgba(0, 255, 100, 0.25);
-    backdrop-filter: blur(10px);
-  }
+* {
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+}
 
-  .display {
-    background: #000;
-    border-radius: 10px;
-    padding: 10px;
-    margin-bottom: 15px;
-    text-align: right;
-    color: #0f0;
-    overflow: hidden;
-  }
+body {
+  margin: 0;
+  height: 100vh;
+  background: radial-gradient(circle at top, #2a2a2a, var(--bg));
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--txt);
+}
 
-  .history {
-    font-size: 14px;
-    opacity: 0.6;
-    min-height: 18px;
-  }
+.calculator {
+  width: 330px;
+  background: var(--panel);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 0 40px rgba(0,255,100,.25);
+}
 
-  .current {
-    font-size: 28px;
-    word-wrap: break-word;
-  }
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
 
-  .buttons {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-  }
+.toggle {
+  cursor: pointer;
+  font-size: 14px;
+  opacity: .8;
+}
 
-  button {
-    height: 55px;
-    border: none;
-    border-radius: 10px;
-    font-size: 18px;
-    cursor: pointer;
-    transition: transform 0.1s, box-shadow 0.1s, opacity 0.1s;
-  }
+.display {
+  background: #000;
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 10px;
+  text-align: right;
+  color: var(--accent);
+}
 
-  button:active {
-    transform: scale(0.95);
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.6);
-  }
+.history {
+  font-size: 12px;
+  opacity: .6;
+  height: 20px;
+  overflow: hidden;
+}
 
-  .number {
-    background: #3e3e3e;
-    color: #fff;
-  }
+.current {
+  font-size: 30px;
+  min-height: 36px;
+  word-break: break-all;
+}
 
-  .operator {
-    background: #ff9f0a;
-    color: #fff;
-  }
+.history-panel {
+  max-height: 70px;
+  overflow-y: auto;
+  font-size: 12px;
+  opacity: .7;
+  margin-bottom: 10px;
+}
 
-  .clear {
-    background: #ff453a;
-    color: #fff;
-    grid-column: span 2;
-  }
+.buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
 
-  .equals {
-    background: #30d158;
-    color: #fff;
-    grid-column: span 2;
-  }
+button {
+  height: 52px;
+  border-radius: 12px;
+  border: none;
+  background: var(--btn);
+  color: var(--txt);
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform .1s, opacity .1s;
+}
 
-  .del {
-    background: #636366;
-    color: #fff;
-  }
+button:hover { opacity: .85; }
+button:active { transform: scale(.95); }
 
-  button:hover {
-    opacity: 0.85;
-  }
+.operator { background: var(--op); }
+.equals { background: var(--eq); grid-column: span 2; }
+.clear { background: #ff453a; grid-column: span 2; }
+.func { background: #636366; }
+
+.error {
+  animation: shake .2s linear 2;
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  50% { transform: translateX(4px); }
+  75% { transform: translateX(-4px); }
+  100% { transform: translateX(0); }
+}
 </style>
 </head>
 <body>
 
 <div class="calculator">
-  <div class="display">
-    <div id="history" class="history"></div>
-    <div id="current" class="current">0</div>
+  <div class="header">
+    <strong>Calculator</strong>
+    <span class="toggle" onclick="toggleTheme()">🌙 Theme</span>
   </div>
+
+  <div class="display" id="display">
+    <div class="history" id="history"></div>
+    <div class="current" id="current">0</div>
+  </div>
+
+  <div class="history-panel" id="log"></div>
 
   <div class="buttons">
     <button class="clear" onclick="clearAll()">C</button>
-    <button class="del" onclick="deleteLast()">DEL</button>
+    <button class="func" onclick="toggleSign()">±</button>
     <button class="operator" onclick="appendOperator('/')">÷</button>
 
-    <button class="number" onclick="appendNumber('7')">7</button>
-    <button class="number" onclick="appendNumber('8')">8</button>
-    <button class="number" onclick="appendNumber('9')">9</button>
+    <button onclick="append('7')">7</button>
+    <button onclick="append('8')">8</button>
+    <button onclick="append('9')">9</button>
     <button class="operator" onclick="appendOperator('*')">×</button>
 
-    <button class="number" onclick="appendNumber('4')">4</button>
-    <button class="number" onclick="appendNumber('5')">5</button>
-    <button class="number" onclick="appendNumber('6')">6</button>
+    <button onclick="append('4')">4</button>
+    <button onclick="append('5')">5</button>
+    <button onclick="append('6')">6</button>
     <button class="operator" onclick="appendOperator('-')">−</button>
 
-    <button class="number" onclick="appendNumber('1')">1</button>
-    <button class="number" onclick="appendNumber('2')">2</button>
-    <button class="number" onclick="appendNumber('3')">3</button>
+    <button onclick="append('1')">1</button>
+    <button onclick="append('2')">2</button>
+    <button onclick="append('3')">3</button>
     <button class="operator" onclick="appendOperator('+')">+</button>
 
-    <button class="number" onclick="appendNumber('0')">0</button>
-    <button class="number" onclick="appendNumber('.')">.</button>
+    <button onclick="append('0')">0</button>
+    <button onclick="append('.')">.</button>
+    <button class="func" onclick="square()">x²</button>
+    <button class="func" onclick="sqrt()">√</button>
+
+    <button class="func" onclick="percent()">%</button>
     <button class="equals" onclick="calculate()">=</button>
   </div>
 </div>
 
 <script>
-  const currentDisplay = document.getElementById("current");
-  const historyDisplay = document.getElementById("history");
+let input = "";
+const current = document.getElementById("current");
+const history = document.getElementById("history");
+const log = document.getElementById("log");
+const display = document.getElementById("display");
 
-  let input = "";
+function update() {
+  current.textContent = input || "0";
+}
 
-  function updateDisplay() {
-    currentDisplay.textContent = input || "0";
-  }
+function append(val) {
+  input += val;
+  update();
+}
 
-  function appendNumber(num) {
-    input += num;
-    updateDisplay();
-  }
+function appendOperator(op) {
+  if (!input || /[+\-*/]$/.test(input)) return;
+  input += op;
+  update();
+}
 
-  function appendOperator(op) {
-    if (!input) return;
-    if ("+-*/".includes(input.slice(-1))) return;
-    input += op;
-    updateDisplay();
-  }
+function clearAll() {
+  input = "";
+  history.textContent = "";
+  update();
+}
 
-  function clearAll() {
+function toggleSign() {
+  if (!input) return;
+  input = input.startsWith("-") ? input.slice(1) : "-" + input;
+  update();
+}
+
+function square() {
+  if (!input) return;
+  input = (Number(input) ** 2).toString();
+  update();
+}
+
+function sqrt() {
+  if (!input) return;
+  input = Math.sqrt(Number(input)).toString();
+  update();
+}
+
+function percent() {
+  if (!input) return;
+  input = (Number(input) / 100).toString();
+  update();
+}
+
+function safeEval(expr) {
+  return Function(`"use strict";return (${expr.replace(/[^-()\d/*+.]/g, "")})`)();
+}
+
+function calculate() {
+  try {
+    const result = safeEval(input);
+    history.textContent = input + " =";
+    log.innerHTML += `<div>${input} = <strong>${result}</strong></div>`;
+    input = result.toString();
+    update();
+  } catch {
+    display.classList.add("error");
+    setTimeout(() => display.classList.remove("error"), 300);
+    current.textContent = "Error";
     input = "";
-    historyDisplay.textContent = "";
-    updateDisplay();
   }
+}
 
-  function deleteLast() {
-    input = input.slice(0, -1);
-    updateDisplay();
-  }
+function toggleTheme() {
+  document.body.classList.toggle("light");
+}
 
-  function calculate() {
-    try {
-      const result = Function(`"use strict"; return (${input})`)();
-      historyDisplay.textContent = input + " =";
-      input = result.toString();
-      updateDisplay();
-    } catch {
-      currentDisplay.textContent = "Error";
-      input = "";
-    }
-  }
-
-  // Keyboard support
-  document.addEventListener("keydown", (e) => {
-    if (!isNaN(e.key) || e.key === ".") appendNumber(e.key);
-    if ("+-*/".includes(e.key)) appendOperator(e.key);
-    if (e.key === "Enter") calculate();
-    if (e.key === "Backspace") deleteLast();
-    if (e.key === "Escape") clearAll();
-  });
+/* Keyboard */
+document.addEventListener("keydown", e => {
+  if (!isNaN(e.key) || e.key === ".") append(e.key);
+  if ("+-*/".includes(e.key)) appendOperator(e.key);
+  if (e.key === "Enter") calculate();
+  if (e.key === "Escape") clearAll();
+});
 </script>
 
 </body>
